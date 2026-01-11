@@ -28,12 +28,18 @@ jobs:
       with:
         images: ghcr.io/${{ github.repository }}
         tags: |
-          type=raw,value=latest,enable={{is_default_branch}}
+          type=raw,value=latest
           type=sha
 
     - name: Build and push Docker image
       uses: docker/build-push-action@v6
       with:
         context: .
+        push: true
         tags: ${{ steps.meta.outputs.tags }}
         labels: ${{ steps.meta.outputs.labels }}
+    - name: Trigger remote update
+      run: |
+        curl -X GET \
+          -H "Content-Type: application/json" \
+          https://mgmt.bieda.it/pull-frosthaven?secret=${{ secrets.WEBHOOK_SECRET }}
